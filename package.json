@@ -1,0 +1,20 @@
+{
+  "name": "lereddit",
+  "version": "1.0.0",
+  "description": "quickchallenge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khairulanwarDeen/lereddit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/khairulanwarDeen/lereddit/issues"
+  },
+  "homepage": "https://github.com/khairulanwarDeen/lereddit#readme"
+}
