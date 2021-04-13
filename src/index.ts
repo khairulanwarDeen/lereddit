@@ -2,9 +2,10 @@ import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
 import { Post } from "./entities/Post";
 import microConfig from "./mikro-orm.config";
-import express from 'express';
-import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
+import express from "express";
+import { ApolloServer } from "apollo-server-express";
+import { buildSchema } from "type-graphql";
+import { HelloResolver } from "./resolvers/hello";
 
 const main = async () => {
     
@@ -12,29 +13,31 @@ const main = async () => {
     console.log("yo wurl");
     await orm.getMigrator().up();
 
-    const post = orm.em.create(Post, {title: 'my first post'});
-    await orm.em.persistAndFlush(post);
+    // const post = orm.em.create(Post, {title: 'my first post'});
+    // await orm.em.persistAndFlush(post);
     //await orm.em.nativeInsert(Post, {title: 'my first post 2'}); //full of errors here
 
     const posts = await orm.em.find(Post, {});
     console.log(posts)
-    // const app = express();
-    // const apolloServer = new ApolloServer({
-    //     schema: await buildSchema({}
-    //         resolvers: [],
-    //         validate: false,
+    const app = express();
+    const apolloServer = new ApolloServer({
+        schema: await buildSchema({
+            resolvers: [HelloResolver],
+            validate: false,
             
 
-    //     })
-    // })
-    // app.get('/', (_, res) => { // to ignore a variable you put the underscore '_'
-        
-    //     res.send("yo whatup");
-    // })
+        })
+    });
+    apolloServer.applyMiddleware({ app });
 
-    // app.listen(4000, () => {
-    //     console.log('server start on localhost:4000')
-    // })
+    app.get('/', (_, res) => { // to ignore a variable you put the underscore '_'
+        
+        res.send("yo whatup");
+    })
+
+    app.listen(4000, () => {
+        console.log('server start on localhost:4000')
+    })
 }
 main().catch((err) => {
     console.error(err);
