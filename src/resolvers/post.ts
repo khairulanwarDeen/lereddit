@@ -1,6 +1,6 @@
 import { Post } from "../entities/post";
 import { MyContext } from "src/types";
-import { Ctx, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Int, Query, Resolver } from "type-graphql";
 
 
 @Resolver()
@@ -9,6 +9,14 @@ export class PostResolver {
     posts(
         @Ctx() {em}: MyContext): Promise<Post[]>{     
         return em.find(Post, {});
+    }
+
+    @Query(() => Post, {nullable: true})
+    post(
+        @Arg("id", () => Int) id:number,
+        @Ctx() { em }: MyContext
+    ): Promise<Post | null> {
+        return em.findOne(Post, { id });
     }
 
 }
