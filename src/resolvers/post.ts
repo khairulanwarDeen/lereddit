@@ -29,4 +29,22 @@ export class PostResolver {
         return post;
     }
 
+    @Mutation(() => Post, {nullable: true}) //return types
+    async updatePost(
+        @Arg("id") id:number,                                       //these are arguments
+        @Arg("title", () => String, {nullable: true}) title:string, //this argument becomes optional. 
+                                                                    //but must explicitly show the expected type if there is one
+        @Ctx() { em }: MyContext                          
+    ): Promise<Post | null> {
+        const post = await em.findOne(Post, {id})
+        if (!post){
+            return null;
+        }
+        if( typeof title !== undefined){
+            post.title = title;
+            await em.persistAndFlush(post);
+        }
+        return post;
+    }
+
 }
