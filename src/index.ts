@@ -9,12 +9,13 @@ import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { Post } from "./entities/post";
+import { UserResolver } from "./resolvers/user";
 
 const main = async () => {
     
     const orm = await MikroORM.init(microConfig);
     console.log("yo wurl");
-    await orm.getMigrator().up();
+    //await orm.getMigrator().up();
 
     // const post = orm.em.create(Post, {title: 'my first post'});
     // await orm.em.persistAndFlush(post);
@@ -25,7 +26,7 @@ const main = async () => {
     const app = express();
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [HelloResolver, PostResolver],
+            resolvers: [HelloResolver, PostResolver, UserResolver],
             validate: false,
         }),
         context: () => ({ em: orm.em })
