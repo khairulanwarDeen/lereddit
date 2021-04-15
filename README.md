@@ -25,3 +25,15 @@ Sometimes, even though you don’t use TEXT or BLOB related type in your table, 
 
 ### TLDR:
 Set the column and specify to to a varchar(*specify the maximum length*), then you can set the column to be unique
+
+# Cookie debugging
+
+Because we are using redis here, it is considered a 3 party server i think. so the secure option in setting the cookie in "src/index.ts" was commented out. 
+
+https://github.com/benawad/lireddit/issues/13
+https://benawad.com/cookie
+
+# express.session
+
+Sessions are not in express anymore. 
+Create userId explicitly for the req in types.ts
