@@ -33,11 +33,39 @@ Because we are using redis here, it is considered a 3 party server i think. so t
 https://github.com/benawad/lireddit/issues/13
 https://benawad.com/cookie
 
+## cookies and req.session
+
+How logging in with cookies work.
+
+### First
+
+When logging in, 
+the session is created using redis
+req.session.userId = user.Id
+
+### Second
+
+this session has its own id. Sessions and its userIds are stored in key paired values
+
+eg.
+session: qwerty -> userId: 1
+session: asdfgh -> userId: 2
+
+### Third
+
+A cookie is given to the session created when the user logs in or register. This cookie is encrypted with a secret aka "keyboard cat"
+
+### Fourth
+
+When the user need to make a transaction, like a query, me, the cookie is decrypted with the secret to find the session
+
+### Fifth
+
+The session can then be used to look for the userId
+
 ## Secure attribute in the cookie options
 
 Overview. The secure attribute is an option that can be set by the application server when sending a new cookie to the user within an HTTP Response. The purpose of the secure attribute is to prevent cookies from being observed by unauthorized parties due to the transmission of the cookie in clear text.
-
-
 
 # express.session
 

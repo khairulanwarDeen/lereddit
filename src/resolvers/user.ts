@@ -1,6 +1,6 @@
 import { User } from "../entities/user";
 import { MyContext } from "src/types";
-import { Arg, Ctx, Field, Mutation, ObjectType, Resolver } from "type-graphql";
+import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
 
 @ObjectType()
@@ -22,30 +22,26 @@ class UserReponse{
 }
 
 
-//having some issues with unique username here.
-//in schema, it is unique, however, for some reason
-// i can create a user with a username that already exists
-/*
-To fix in the future, to make the username unique
-for now the workaround is to see if the user exist ke tak
-Operation failed: There was an error while applying the SQL script to the database.
-Executing:
-ALTER TABLE `lireddit`.`user` 
-ADD UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE;
-;
-
-ERROR 1170: BLOB/TEXT column 'username' used in key specification without a key length
-SQL Statement:
-ALTER TABLE `lireddit`.`user` 
-ADD UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE
-*/
 @Resolver()
 export class UserResolver {
+
+    @Query(() => User, {nullable: true})
+    async me(
+        @Ctx() { req, em }: MyContext
+        ) {
+        if (!req.session.userId) {
+            return null;
+        }
+        const user = await em.findOne(User, {id: req.session.userId});
+        return user;
+        
+    }
+
     @Mutation(() => UserReponse)
     async register(
         @Arg("username") usernameInput:string,
         @Arg("password") passwordInput:string,
-        @Ctx() { em }: MyContext
+        @Ctx() { em, req }: MyContext
     ): Promise<UserReponse> {
         if(usernameInput.length < 1){
             return {
@@ -90,6 +86,8 @@ export class UserResolver {
                 };
               }
         }
+
+        req.session.userId = user.id;
         
         return {user};
     }
