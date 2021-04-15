@@ -8,7 +8,7 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
-import { Post } from "./entities/post";
+//import { Post } from "./entities/post";
 import { UserResolver } from "./resolvers/user";
 
 const main = async () => {
@@ -21,8 +21,8 @@ const main = async () => {
     // await orm.em.persistAndFlush(post);
     //await orm.em.nativeInsert(Post, {title: 'my first post 2'}); //full of errors here
 
-    const posts = await orm.em.find(Post, {});
-    console.log(posts)
+    // const posts = await orm.em.find(Post, {});
+    // console.log(posts)
     const app = express();
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
@@ -44,5 +44,4 @@ const main = async () => {
 }
 main().catch((err) => {
     console.error(err);
-}) 
-console.log("yo wurl");
+})

@@ -55,15 +55,16 @@ export class UserResolver {
                 }],
             };
         }
-        const checkUsername = await em.findOne(User, {username: usernameInput})
-        if (checkUsername){
-            return{
-                errors:[{
-                    field: "username",
-                    message: "This username already exists",
-                }]
-            };
-        }
+        
+        // const checkUsername = await em.findOne(User, {username: usernameInput})
+        // if (checkUsername){
+        //     return{
+        //         errors:[{
+        //             field: "username",
+        //             message: "This username already exists",
+        //         }]
+        //     };
+        // }
         if(passwordInput.length < 1){
             return {
                 errors: [{
@@ -74,7 +75,22 @@ export class UserResolver {
         }
         const hashedPassword = await argon2.hash(passwordInput);
         const user = em.create(User, {username: usernameInput, password: hashedPassword});
-        await em.persistAndFlush(user);
+        try{
+            
+            await em.persistAndFlush(user);
+        } catch(err) {
+            if (err.code === "ER_DUP_ENTRY") {
+                return {
+                  errors: [
+                    {
+                      field: "username",
+                      message: "username already taken",
+                    },
+                  ],
+                };
+              }
+        }
+        
         return {user};
     }
 
