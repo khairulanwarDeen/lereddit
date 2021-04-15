@@ -16,7 +16,7 @@ export class PostResolver {
         @Arg("id") id:number,
         @Ctx() { em }: MyContext
     ): Promise<Post | null> {
-        return em.findOne(Post, { id });
+        return em.findOne(Post, { id: id });
     }
 
     @Mutation(() => Post)
