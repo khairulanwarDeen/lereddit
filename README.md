@@ -33,6 +33,12 @@ Because we are using redis here, it is considered a 3 party server i think. so t
 https://github.com/benawad/lireddit/issues/13
 https://benawad.com/cookie
 
+## Secure attribute in the cookie options
+
+Overview. The secure attribute is an option that can be set by the application server when sending a new cookie to the user within an HTTP Response. The purpose of the secure attribute is to prevent cookies from being observed by unauthorized parties due to the transmission of the cookie in clear text.
+
+
+
 # express.session
 
 Sessions are not in express anymore. 
