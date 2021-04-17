@@ -1,7 +1,8 @@
 import React from 'react'
 import { Formik, Form } from "formik";
-import { FormControl, FormLabel, Input, FormErrorMessage } from '@chakra-ui/react';
+import { FormControl, FormLabel, Input, FormErrorMessage, Box, Button } from '@chakra-ui/react';
 import { Wrapper } from '../components/wrapper';
+import { InputField } from '../components/InputField';
 
 interface registerProps {
 
@@ -9,25 +10,29 @@ interface registerProps {
 
 export const Register: React.FC<registerProps> = ({ }) => {
     return (
-        <Wrapper variant="small">
+        <Wrapper variant="regular">
             <Formik
                 initialValues={{ username: "", password: "" }}
                 onSubmit={(values) => {
                     console.log(values);
                 }}
             >
-                {({ values, handleChange }) => (
+                {({ isSubmitting }) => (
                     <Form>
-                        <FormControl>
-                            <FormLabel htmlFor="username">Username</FormLabel>
-                            <Input
-                                value={values.username}
-                                onChange={handleChange}
-                                id="username"
-                                placeholder="username"
+                        <InputField
+                            name="username"
+                            placeholder="username"
+                            label="Username"
+                        />
+                        <Box mt="4">
+                            <InputField
+                                name="password"
+                                placeholder="password"
+                                label="Password"
+                                type="password"
                             />
-                            {/* <FormErrorMessage>{form.errors.name}</FormErrorMessage> */}
-                        </FormControl>
+                        </Box>
+                        <Button type="submit" isLoading={isSubmitting} colorScheme="facebook">register</Button>
                     </Form>
                 )}
             </Formik>
