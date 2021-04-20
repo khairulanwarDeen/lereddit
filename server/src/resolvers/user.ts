@@ -2,6 +2,7 @@ import { User } from "../entities/user";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
+//import { EntityManager } from "@mikro-orm/mysql";
 
 @ObjectType()
 class FieldError{
@@ -71,8 +72,17 @@ export class UserResolver {
         }
         const hashedPassword = await argon2.hash(passwordInput);
         const user = em.create(User, {username: usernameInput, password: hashedPassword});
+        //let user;
         try{
-            
+            // const [result] = await (em as EntityManager).createQueryBuilder(User).getKnexQuery().insert({
+            //     username: usernameInput,
+            //     password: hashedPassword,
+            //     created_at: new Date(),
+            //     updated_at: new Date()
+            // }).returning("*");
+            // user = result[0];
+
+            /** this persist and flush stuff works well here */
             await em.persistAndFlush(user);
         } catch(err) {
             if (err.code === "ER_DUP_ENTRY") {
