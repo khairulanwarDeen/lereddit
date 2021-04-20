@@ -2,6 +2,7 @@ import { User } from "../entities/user";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
+import { COOKIE_NAME } from "../constants";
 //import { EntityManager } from "@mikro-orm/mysql";
 
 @ObjectType()
@@ -134,6 +135,22 @@ export class UserResolver {
             user,
         };
         
+    }
+    
+    @Mutation(() => Boolean)
+    logout(
+        @Ctx() {req, res}: MyContext
+    ) {
+        
+        return new Promise(resolve=> req.session.destroy(err=> {
+            res.clearCookie(COOKIE_NAME);
+            if(err) {
+               console.log(err);
+               resolve(false);
+               return;
+            }
+            resolve(true);
+        }))
     }
 
 }
