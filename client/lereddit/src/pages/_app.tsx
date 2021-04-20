@@ -4,7 +4,6 @@ import { Provider, createClient, fetchExchange, dedupExchange } from 'urql'
 import { LoginMutation, MeDocument, MeQuery, RegisterMutation } from '../generated/graphql';
 
 import theme from '../theme'
-import Register from './register';
 
 function betterUpdateQuery<Result, Query>(
   cache: Cache,
@@ -23,7 +22,7 @@ const client = createClient({
   exchanges: [dedupExchange, cacheExchange({
     updates: {
       Mutation: {
-        login: (_result, args, cache, info) => {
+        login: (_result, _args, cache, _info) => {
           betterUpdateQuery<LoginMutation, MeQuery>(
             cache,
             { query: MeDocument },
@@ -38,7 +37,7 @@ const client = createClient({
               }
             })
         },
-        register: (_result, args, cache, info) => {
+        register: (_result, _args, cache, _info) => {
           betterUpdateQuery<RegisterMutation, MeQuery>(
             cache,
             { query: MeDocument },
