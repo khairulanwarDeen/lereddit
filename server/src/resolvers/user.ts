@@ -3,8 +3,8 @@ import { MyContext } from "src/types";
 import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
 import { COOKIE_NAME } from "../constants";
-//import { EntityManager } from "@mikro-orm/mysql";
-
+import { UsernamePasswordInput } from "../utils/UsernamePasswordInput";
+import { validateRegister } from "../utils/validateRegister";
 @ObjectType()
 class FieldError{
     @Field()
@@ -27,6 +27,15 @@ class UserReponse{
 @Resolver()
 export class UserResolver {
 
+    @Mutation(() => Boolean)
+    async forgotPassword(
+        //@Arg('email') email:string,
+        //@Ctx(){em}:MyContext
+    ) {
+        //const user = await em.findOne(User, { email });
+        return true;
+    }
+
     @Query(() => User, {nullable: true})
     async me(
         @Ctx() { req, em }: MyContext
@@ -41,38 +50,15 @@ export class UserResolver {
 
     @Mutation(() => UserReponse)
     async register(
-        @Arg("username") usernameInput:string,
-        @Arg("password") passwordInput:string,
+        @Arg("options") options: UsernamePasswordInput,
         @Ctx() { em, req }: MyContext
     ): Promise<UserReponse> {
-        if(usernameInput.length < 1){
-            return {
-                errors: [{
-                    field: "username",
-                    message: "username must have at least one character",
-                }],
-            };
+        const errors = validateRegister(options);
+        if (errors){
+            return {errors};
         }
-        
-        // const checkUsername = await em.findOne(User, {username: usernameInput})
-        // if (checkUsername){
-        //     return{
-        //         errors:[{
-        //             field: "username",
-        //             message: "This username already exists",
-        //         }]
-        //     };
-        // }
-        if(passwordInput.length < 1){
-            return {
-                errors: [{
-                    field: "password",
-                    message: "password must have at least one character",
-                }],
-            };
-        }
-        const hashedPassword = await argon2.hash(passwordInput);
-        const user = em.create(User, {username: usernameInput, password: hashedPassword});
+        const hashedPassword = await argon2.hash(options.password);
+        const user = em.create(User, {username: options.username, password: hashedPassword, email:options.email});
         //let user;
         try{
             // const [result] = await (em as EntityManager).createQueryBuilder(User).getKnexQuery().insert({
@@ -105,21 +91,27 @@ export class UserResolver {
 
     @Mutation(() => UserReponse)
     async login(
-        @Arg("username") usernameInput:string,
-        @Arg("password") passwordInput:string,
+        @Arg("usernameOremail") usernameOremail: string,
+        @Arg("password") password: string,
         @Ctx() { em, req }: MyContext
     ): Promise<UserReponse> {
-        const user = await em.findOne(User, {username: usernameInput});
+        const user = await em.findOne(
+            User,
+            usernameOremail.includes("@") ? {email: usernameOremail} : {username: usernameOremail}
+        );
         if (!user){
             return {
-                errors: [{
-                    field: "username",
-                    message: "username does not exist",
-                }],
-            };
+                errors: [
+                    {
+                        field: "usernameOremail",
+                        message: "Username or Email does not exist"
+                    }
+                ]
+            }
         }
+        
 
-        const valid = await argon2.verify(user.password, passwordInput);
+        const valid = await argon2.verify(user.password, password);
         if (!valid){
             return {
                 errors: [{
