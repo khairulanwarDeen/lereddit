@@ -157,6 +157,17 @@ export type MeQuery = (
   )> }
 );
 
+export type GetPostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPostsQuery = (
+  { __typename?: 'Query' }
+  & { getposts: Array<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'title' | 'id' | 'createdAt' | 'updatedAt'>
+  )> }
+);
+
 export const RegularUserFragmentDoc = gql`
     fragment RegularUser on User {
   id
@@ -216,4 +227,18 @@ export const MeDocument = gql`
 
 export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
+};
+export const GetPostsDocument = gql`
+    query GetPosts {
+  getposts {
+    title
+    id
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+export function useGetPostsQuery(options: Omit<Urql.UseQueryArgs<GetPostsQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<GetPostsQuery>({ query: GetPostsDocument, ...options });
 };

@@ -21,3 +21,8 @@ yarn create next-app --example with-chakra-ui with-chakra-ui-app
 ```
 
 Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+
+
+# Next-urql
+
+Note that if you are using a Next version before v9.4, you will need polyfill fetch, this can be done through "isomorphic-unfetch"
