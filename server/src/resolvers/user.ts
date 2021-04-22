@@ -12,7 +12,7 @@ import {
 import argon2 from "argon2";
 import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
 import { UsernamePasswordInput } from "../utils/UsernamePasswordInput";
-import { validateRegister } from "../utils/validateRegister";
+import { validatePassword, validateRegister } from "../utils/validateRegister";
 import { sendMail } from "../utils/sendEmail";
 import { v4 } from "uuid";
 
@@ -26,7 +26,7 @@ class FieldError {
 }
 
 @ObjectType()
-class UserReponse {
+class UserResponse {
   @Field(() => [FieldError], { nullable: true })
   errors?: FieldError[];
 
@@ -36,6 +36,47 @@ class UserReponse {
 
 @Resolver()
 export class UserResolver {
+
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
+    @Ctx() { em, redis, req }: MyContext
+  ): Promise<UserResponse> {
+    const errors = validatePassword(newPassword);
+    if (errors) {
+      return { errors };
+    }
+    const key = FORGET_PASSWORD_PREFIX + token
+    const userId = await redis.get(key);
+    if (!userId) {
+      return {
+        errors: [{
+          field: "token",
+          message: "token expired"
+        }]
+      }
+    }
+    const hashedPassword = await argon2.hash(newPassword);
+    const user = await em.findOne(User, { id: parseInt(userId) })
+
+    if (!user) {
+      return {
+        errors: [{
+          field: "token",
+          message: "user no longer exists"
+        }]
+      }
+    }
+    user.password = hashedPassword;
+    await em.persistAndFlush(user);
+    await redis.del(key);
+    //this logs in the user after changing the password
+    req.session.userId = user.id;
+
+    return { user };
+  }
+
   @Mutation(() => Boolean)
   async forgotPassword(
     @Arg("email") email: string,
@@ -73,11 +114,11 @@ export class UserResolver {
     return user;
   }
 
-  @Mutation(() => UserReponse)
+  @Mutation(() => UserResponse)
   async register(
     @Arg("options") options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
-  ): Promise<UserReponse> {
+  ): Promise<UserResponse> {
     const errors = validateRegister(options);
     if (errors) {
       return { errors };
@@ -118,12 +159,12 @@ export class UserResolver {
     return { user };
   }
 
-  @Mutation(() => UserReponse)
+  @Mutation(() => UserResponse)
   async login(
     @Arg("usernameOremail") usernameOremail: string,
     @Arg("password") password: string,
     @Ctx() { em, req }: MyContext
-  ): Promise<UserReponse> {
+  ): Promise<UserResponse> {
     const user = await em.findOne(
       User,
       usernameOremail.includes("@")
