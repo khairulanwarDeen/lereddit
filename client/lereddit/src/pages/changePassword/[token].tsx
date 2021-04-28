@@ -1,15 +1,8 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  Box,
-  Button,
-  CloseButton,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { NextPage } from "next";
 import { withUrqlClient } from "next-urql";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { InputField } from "../../components/InputField";
@@ -54,12 +47,14 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
               />
             </Box>
             {tokenError ? (
-              <Alert status="error">
-                <AlertIcon />
-                <AlertTitle mr={2}>Your token is outdated!</AlertTitle>
-                <AlertDescription>User may have been deleted</AlertDescription>
-                <CloseButton position="absolute" right="8px" top="8px" />
-              </Alert>
+              <Flex>
+                <Box mr={4} style={{ color: "red" }}>
+                  {tokenError}
+                </Box>
+                <NextLink href="/forgot-password">
+                  <Link>Go forget it again</Link>
+                </NextLink>
+              </Flex>
             ) : null}
             <Box mt="4">
               <Button

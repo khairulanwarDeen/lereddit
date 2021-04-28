@@ -82,13 +82,14 @@ export class UserResolver {
     @Arg("email") email: string,
     @Ctx() { em, redis }: MyContext
   ) {
+    console.log("account: " + email)
     const user = await em.findOne(User, { email });
     if (!user) {
       /** you do not want to say whether the email
        * exists or not. that way they cannot phish
        * through the user's email to see if they exist or not
        */
-
+      console.log("account doesnt exist")
       return true;
     }
     const token = v4();
