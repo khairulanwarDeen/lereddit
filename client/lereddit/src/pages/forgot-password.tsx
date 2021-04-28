@@ -12,7 +12,6 @@ export const ForgotPassword: React.FC<{}> = ({}) => {
   //const router = useRouter();
   const [complete, setComplete] = useState(false);
   const [, forgotPassword] = useForgotPasswordMutation();
-  const testemail = "bob@ben.com";
   return (
     <Wrapper variant="small">
       <Formik
