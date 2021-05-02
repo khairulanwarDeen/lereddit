@@ -1,5 +1,6 @@
 import { Field, ObjectType } from "type-graphql";
-import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn, Entity, BaseEntity } from "typeorm";
+import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn, Entity, BaseEntity, ManyToOne } from "typeorm";
+import { User } from "./user";
 
 @ObjectType()
 @Entity()
@@ -19,6 +20,21 @@ export class Post extends BaseEntity {
     @Field() //you can comment this field out and it will not be exposed on the graphql server
     @Column() //you may or may want to explicity declare the type here "@Column({type: "text"})"
     title!: string;
+
+    @Field()
+    @Column()
+    text!: string;
+
+    @Field()
+    @Column({ type: "int", default: 0 })
+    points!: number;
+
+    @Field()
+    @Column()
+    creatorId: number;
+
+    @ManyToOne(() => User, (user) => user.posts)
+    creator: User;
 
 }
 
