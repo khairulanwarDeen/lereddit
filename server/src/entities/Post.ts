@@ -1,30 +1,30 @@
-import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 import { Field, ObjectType } from "type-graphql";
+import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn, Entity, BaseEntity } from "typeorm";
 
 @ObjectType()
 @Entity()
-export class Post{
+export class Post extends BaseEntity {
     @Field()
-    @PrimaryKey()
+    @PrimaryGeneratedColumn()
     id!: number;
 
     @Field(() => String)
-    @Property({ type: "date" })
-    createdAt = new Date();
+    @CreateDateColumn()
+    createdAt: Date;
 
     @Field(() => String)
-    @Property({ type:"date", onUpdate: () => new Date() })
-    updatedAt = new Date();
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @Field() //you can comment this field out and it will not be exposed on the graphql server
-    @Property()
+    @Column() //you may or may want to explicity declare the type here "@Column({type: "text"})"
     title!: string;
 
 }
 
 /*
 This is just a class of the post. It is not a graphql type
-*/ 
+*/
 // @Entity()
 // export class Post{
 //     @PrimaryKey()

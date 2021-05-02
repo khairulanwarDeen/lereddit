@@ -1,4 +1,4 @@
-import { MikroORM } from "@mikro-orm/core";
+//import { MikroORM } from "@mikro-orm/core";
 import { ApolloServer } from "apollo-server-express";
 import connectRedis from "connect-redis";
 import cors from "cors";
@@ -8,17 +8,34 @@ import Redis from "ioredis";
 import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { COOKIE_NAME } from "./constants";
-import microConfig from "./mikro-orm.config";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 //import { Post } from "./entities/post";
 import { UserResolver } from "./resolvers/user";
+import { createConnection } from "typeorm";
+import { Post } from "./entities/post";
+import { User } from "./entities/user";
 
 
 const main = async () => {
-    const orm = await MikroORM.init(microConfig);
-    console.log("yo wurl");
-    
+
+    const conn = await createConnection({
+        /**
+         * apprently for mysql, 
+         * the table has to be made before hand,
+         * whereas in postgres, it doesnt have to
+         */
+        type: "mysql",
+        database: "lireddit2",
+        username: "root",
+        password: "password",
+        logging: true,
+        synchronize: true,
+        entities: [Post, User]
+    });
+
+
+    console.log("conn.isconnected: " + conn.isConnected)
     //the below command doesnt work for mysql
     //await orm.getMigrator().up();
 
@@ -30,7 +47,7 @@ const main = async () => {
     // console.log(posts)
     const app = express();
 
-    
+
     const RedisStore = connectRedis(session);
     const redis = new Redis();
     app.use(cors({
@@ -40,9 +57,9 @@ const main = async () => {
     app.use(
         session({
             name: COOKIE_NAME,
-            store: new RedisStore({ 
+            store: new RedisStore({
                 client: redis,
-                disableTouch: true 
+                disableTouch: true
             }),
             cookie: {
                 maxAge: 1000 * 60 * 60 * 24 * 7,
@@ -54,23 +71,23 @@ const main = async () => {
             secret: "keyboard cat",
             resave: false,
         })
-      )
+    )
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
             resolvers: [HelloResolver, PostResolver, UserResolver],
             validate: false,
         }),
-        context: ({ req, res }) => ({ em: orm.em, req, res, redis })
+        context: ({ req, res }) => ({ req, res, redis })
     });
-    apolloServer.applyMiddleware({ 
+    apolloServer.applyMiddleware({
         app,
         //cors: { origin: "http://localhost:3000" },
         cors: false,
-     });
+    });
 
     app.get('/', (_, res) => { // to ignore a variable you put the underscore '_'
-        
+
         res.send("yo whatup");
     })
 

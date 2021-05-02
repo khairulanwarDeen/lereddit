@@ -15,6 +15,7 @@ import { UsernamePasswordInput } from "../utils/UsernamePasswordInput";
 import { validatePassword, validateRegister } from "../utils/validateRegister";
 import { sendMail } from "../utils/sendEmail";
 import { v4 } from "uuid";
+import { getConnection } from "typeorm";
 
 @ObjectType()
 class FieldError {
@@ -41,7 +42,7 @@ export class UserResolver {
   async changePassword(
     @Arg("token") token: string,
     @Arg("newPassword") newPassword: string,
-    @Ctx() { em, redis, req }: MyContext
+    @Ctx() { redis, req }: MyContext
   ): Promise<UserResponse> {
     const errors = validatePassword(newPassword);
     if (errors) {
@@ -57,8 +58,9 @@ export class UserResolver {
         }]
       }
     }
+    const userIdNum = parseInt(userId);
     const hashedPassword = await argon2.hash(newPassword);
-    const user = await em.findOne(User, { id: parseInt(userId) })
+    const user = await User.findOne(userIdNum);
 
     if (!user) {
       return {
@@ -68,8 +70,9 @@ export class UserResolver {
         }]
       }
     }
-    user.password = hashedPassword;
-    await em.persistAndFlush(user);
+    await User.update({ id: userIdNum }, {
+      password: hashedPassword
+    });
     await redis.del(key);
     //this logs in the user after changing the password
     req.session.userId = user.id;
@@ -80,10 +83,10 @@ export class UserResolver {
   @Mutation(() => Boolean)
   async forgotPassword(
     @Arg("email") email: string,
-    @Ctx() { em, redis }: MyContext
+    @Ctx() { redis }: MyContext
   ) {
     console.log("account: " + email)
-    const user = await em.findOne(User, { email });
+    const user = await User.findOne({ where: { email } });//must do it this way because it is not the primary key
     if (!user) {
       /** you do not want to say whether the email
        * exists or not. that way they cannot phish
@@ -107,42 +110,66 @@ export class UserResolver {
   }
 
   @Query(() => User, { nullable: true })
-  async me(@Ctx() { req, em }: MyContext) {
+  me(@Ctx() { req }: MyContext) {
     if (!req.session.userId) {
       return null;
     }
-    const user = await em.findOne(User, { id: req.session.userId });
-    return user;
+    return User.findOne(req.session.userId); //returning the promise of the user
   }
 
   @Mutation(() => UserResponse)
   async register(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const errors = validateRegister(options);
     if (errors) {
       return { errors };
     }
     const hashedPassword = await argon2.hash(options.password);
-    const user = em.create(User, {
-      username: options.username,
-      password: hashedPassword,
-      email: options.email,
-    });
     //let user;
     try {
-      // const [result] = await (em as EntityManager).createQueryBuilder(User).getKnexQuery().insert({
-      //     username: usernameInput,
-      //     password: hashedPassword,
-      //     created_at: new Date(),
-      //     updated_at: new Date()
-      // }).returning("*");
-      // user = result[0];
+      /**
+       * There are two ways of doing this
+       * 1) use TypeOrm create
+       * 2) use TypeOrm QueryBuilder
+       */
 
-      /** this persist and flush stuff works well here */
-      await em.persistAndFlush(user);
-    } catch (err) {
+      /**
+       * User.create({username: options.username,
+          email: options.email,
+          password: hashedPassword}).save()
+       */
+
+      const result = await getConnection().createQueryBuilder().insert().into(User).values(
+        {
+          username: options.username,
+          email: options.email,
+          password: hashedPassword
+        }
+      ).execute();
+
+      console.log('result' + result.generatedMaps);
+      //user = result;
+      //user = result.raw[0];
+    }
+    //let user;
+    // try {
+    //   // const [result] = await (em as EntityManager).createQueryBuilder(User).getKnexQuery().insert({
+    //   //     username: usernameInput,
+    //   //     password: hashedPassword,
+    //   //     created_at: new Date(),
+    //   //     updated_at: new Date()
+    //   // }).returning("*");
+    //   // user = result[0];
+
+    //   /** this persist and flush stuff works well here */
+    //   await em.persistAndFlush(user);
+    // 
+
+
+    catch (err) {
+      console.log("err: " + err)
       if (err.code === "ER_DUP_ENTRY") {
         return {
           errors: [
@@ -155,7 +182,14 @@ export class UserResolver {
       }
     }
 
-    req.session.userId = user.id;
+
+    const emailInput = options.email;
+    /**
+     * return doesnt work for mysql
+     * so i had to do it manually here. fichdish
+     */
+    const user = await User.findOne({ where: { email: emailInput } });
+    req.session.userId = user?.id;
 
     return { user };
   }
@@ -164,13 +198,13 @@ export class UserResolver {
   async login(
     @Arg("usernameOremail") usernameOremail: string,
     @Arg("password") password: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    const user = await em.findOne(
-      User,
+    const user = await User.findOne(
       usernameOremail.includes("@")
-        ? { email: usernameOremail }
-        : { username: usernameOremail }
+        ? { where: { email: usernameOremail } }
+        : { where: { username: usernameOremail } }
+
     );
     if (!user) {
       return {
