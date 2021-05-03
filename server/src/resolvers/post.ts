@@ -1,7 +1,8 @@
 import { Post } from "../entities/post";
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import { postInput } from "../utils/postInput";
 import { MyContext } from "src/types";
+import { isAuth } from "../middleware/isAuth";
 
 
 @Resolver()
@@ -19,14 +20,12 @@ export class PostResolver {
     }
 
     @Mutation(() => Post)
+    @UseMiddleware(isAuth)
     async createPost(
         @Arg("postInput") postInput: postInput,
         @Ctx() { req }: MyContext
     ): Promise<Post> {
         const userId = req.session.userId;
-        if (!userId) {
-            throw new Error("Not Authenticated");
-        }
         return Post.create({ ...postInput, creatorId: userId }).save();
     }
 

@@ -30,7 +30,7 @@ const main = async () => {
         username: "root",
         password: "password",
         logging: true,
-        synchronize: true,
+        synchronize: false,
         entities: [Post, User]
     });
 
