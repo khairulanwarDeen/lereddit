@@ -49,6 +49,12 @@ export const Login: React.FC<{}> = ({}) => {
               </NextLink>
             </Flex>
 
+            <Flex mt={2}>
+              <NextLink href="/">
+                <Link ml="auto">I do not want to log in</Link>
+              </NextLink>
+            </Flex>
+
             <Button
               type="submit"
               isLoading={isSubmitting}
