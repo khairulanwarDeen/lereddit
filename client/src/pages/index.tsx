@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 
 const Index = () => {
-  const limitNo = 2;
+  const limitNo = 100;
   const [variables, setVariables] = useState({
     limit: limitNo,
     cursor: null as null | string,
@@ -46,7 +46,7 @@ const Index = () => {
         <div>Loading...</div>
       ) : (
         <Stack spacing={8}>
-          {data!.getposts.map((p) => (
+          {data!.getposts.posts.map((p) => (
             <Box key={p.id} p={5} shadow="md" borderWidth="1px">
               <Heading fontSize="large">{p.title + p.id}</Heading>
               <Text mt={4}>{p.textSnippet}</Text>
@@ -54,13 +54,14 @@ const Index = () => {
           ))}
         </Stack>
       )}
-      {data ? (
+      {data && data?.getposts.hasMore ? (
         <Flex>
           <Button
             onClick={() => {
               setVariables({
                 limit: variables.limit,
-                cursor: data.getposts[data.getposts.length - 1].createdAt,
+                cursor:
+                  data.getposts.posts[data.getposts.posts.length - 1].createdAt,
               });
             }}
             isLoading={fetching}

@@ -1,10 +1,10 @@
 import { MyContext } from "src/types";
+import { PaginatedPosts } from "../utils/PaginatedPosts";
 import { Arg, Ctx, FieldResolver, Int, Mutation, Query, Resolver, Root, UseMiddleware } from "type-graphql";
 import { getConnection } from "typeorm";
 import { Post } from "../entities/post";
 import { isAuth } from "../middleware/isAuth";
 import { postInput } from "../utils/postInput";
-
 
 @Resolver(Post)
 export class PostResolver {
@@ -15,22 +15,24 @@ export class PostResolver {
         return (root.text.slice(0, 50) + "...");
     }
 
-    @Query(() => [Post])
+    @Query(() => PaginatedPosts)
     async getposts(
         @Arg('limit', () => Int) limit: number,
         @Arg('cursor', () => String, { nullable: true }) cursor: string | null //becasue the first time you fetch, cursor is null
-    ): Promise<Post[]> {
-        const realLimit = Math.min(50, limit)
+    ): Promise<PaginatedPosts> {
+        const realLimit = Math.min(100, limit)
+        const realLimitPlusOne = realLimit + 1;
         const qb =
             getConnection()
                 .getRepository(Post)
                 .createQueryBuilder("p")
                 .orderBy("createdAt", "DESC")
-                .take(realLimit)
+                .take(realLimitPlusOne)
         if (cursor) {
             qb.where("createdAt < :cursor", { cursor: new Date(parseInt(cursor)) })
         }
-        return qb.getMany();
+        const posts = await qb.getMany()
+        return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne };
     }
 
     @Query(() => Post, { nullable: true })
