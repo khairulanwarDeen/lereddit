@@ -1,15 +1,29 @@
 import { Post } from "../entities/post";
-import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import { Arg, Ctx, Int, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import { postInput } from "../utils/postInput";
 import { MyContext } from "src/types";
 import { isAuth } from "../middleware/isAuth";
+import { getConnection } from "typeorm";
 
 
 @Resolver()
 export class PostResolver {
     @Query(() => [Post])
-    async getposts(): Promise<Post[]> {
-        return Post.find();
+    async getposts(
+        @Arg('limit') limit: number,
+        @Arg('cursor', () => String, { nullable: true }) cursor: string | null //becasue the first time you fetch, cursor is null
+    ): Promise<Post[]> {
+        const realLimit = Math.min(50, limit)
+        const qb =
+            getConnection()
+                .getRepository(Post)
+                .createQueryBuilder("p")
+                .orderBy("createdAt", "DESC")
+                .take(realLimit)
+        if (cursor) {
+            qb.where("createdAt < :cursor", { cursor: new Date(parseInt(cursor)) })
+        }
+        return qb.getMany();
     }
 
     @Query(() => Post, { nullable: true })
