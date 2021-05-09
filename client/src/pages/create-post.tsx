@@ -21,8 +21,8 @@ const CreatePost: React.FC<{}> = ({}) => {
           console.log(values);
           const error = await createPost({ input: values });
           //console.log(error) Observe the keys here to log for better errors
-          console.log(error);
-          if (!error) {
+          console.log("This is an error", error);
+          if (error.error === undefined) {
             //if there was an error, the global error exchange will handle it
             router.push("/");
           }
