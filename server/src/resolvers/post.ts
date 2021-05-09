@@ -10,7 +10,7 @@ import { getConnection } from "typeorm";
 export class PostResolver {
     @Query(() => [Post])
     async getposts(
-        @Arg('limit') limit: number,
+        @Arg('limit', () => Int) limit: number,
         @Arg('cursor', () => String, { nullable: true }) cursor: string | null //becasue the first time you fetch, cursor is null
     ): Promise<Post[]> {
         const realLimit = Math.min(50, limit)

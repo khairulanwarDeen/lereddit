@@ -7,7 +7,12 @@ import NextLink from "next/link";
 import { Link } from "@chakra-ui/react";
 
 const Index = () => {
-  const [{ data }] = useGetPostsQuery();
+  const limit = 4;
+  const [{ data }] = useGetPostsQuery({
+    variables: {
+      limit: limit,
+    },
+  });
   return (
     <Layout>
       <NextLink href="/create-post">
@@ -15,7 +20,7 @@ const Index = () => {
           Create A Post
         </Link>
       </NextLink>
-      <div>hblowurls</div>
+      <div>Latest post from the limit of: {limit}</div>
       <br />
       {!data ? (
         <div>Loading...</div>
