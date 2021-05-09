@@ -7,14 +7,14 @@ import session from "express-session";
 import Redis from "ioredis";
 import "reflect-metadata";
 import { buildSchema } from "type-graphql";
+import { createConnection } from "typeorm";
 import { COOKIE_NAME } from "./constants";
+import { Post } from "./entities/post";
+import { User } from "./entities/user";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 //import { Post } from "./entities/post";
 import { UserResolver } from "./resolvers/user";
-import { createConnection } from "typeorm";
-import { Post } from "./entities/post";
-import { User } from "./entities/user";
 
 
 const main = async () => {
@@ -30,9 +30,11 @@ const main = async () => {
         username: "root",
         password: "password",
         logging: true,
-        synchronize: false,
+        synchronize: true,
+        //migrations: [path.join(__dirname, "./migrations/*")],
         entities: [Post, User]
     });
+    //await conn.runMigrations();
 
 
     console.log("conn.isconnected: " + conn.isConnected)

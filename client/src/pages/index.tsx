@@ -4,10 +4,10 @@ import { Layout } from "../components/layout";
 import { useGetPostsQuery } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import NextLink from "next/link";
-import { Link } from "@chakra-ui/react";
+import { Box, Heading, Link, Text, Stack, Flex } from "@chakra-ui/react";
 
 const Index = () => {
-  const limit = 4;
+  const limit = 15;
   const [{ data }] = useGetPostsQuery({
     variables: {
       limit: limit,
@@ -15,17 +15,28 @@ const Index = () => {
   });
   return (
     <Layout>
-      <NextLink href="/create-post">
-        <Link color="black" mr={2}>
-          Create A Post
-        </Link>
-      </NextLink>
+      <Flex align={"center"}>
+        <Heading>LeRed</Heading>
+        <NextLink href="/create-post">
+          <Link color="black" ml={"auto"}>
+            Create A Post
+          </Link>
+        </NextLink>
+      </Flex>
+
       <div>Latest post from the limit of: {limit}</div>
       <br />
       {!data ? (
         <div>Loading...</div>
       ) : (
-        data.getposts.map((p) => <div key={p.id}>{p.title}</div>)
+        <Stack spacing={8}>
+          {data.getposts.map((p) => (
+            <Box key={p.id} p={5} shadow="md" borderWidth="1px">
+              <Heading fontSize="large">{p.title}</Heading>
+              <Text mt={4}>{p.textSnippet}</Text>
+            </Box>
+          ))}
+        </Stack>
       )}
     </Layout>
   );

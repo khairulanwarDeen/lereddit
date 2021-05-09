@@ -4,5 +4,6 @@ query GetPosts($limit: Int!, $cursor: String) {
     id
     createdAt
     updatedAt
+    textSnippet
   }
 }
