@@ -5,6 +5,7 @@ import { getConnection } from "typeorm";
 import { Post } from "../entities/post";
 import { isAuth } from "../middleware/isAuth";
 import { postInput } from "../utils/postInput";
+import moment from "moment";
 
 @Resolver(Post)
 export class PostResolver {
@@ -22,16 +23,38 @@ export class PostResolver {
     ): Promise<PaginatedPosts> {
         const realLimit = Math.min(100, limit)
         const realLimitPlusOne = realLimit + 1;
-        const qb =
-            getConnection()
-                .getRepository(Post)
-                .createQueryBuilder("p")
-                .orderBy("createdAt", "DESC")
-                .take(realLimitPlusOne)
+        let dateString: any = "";
+        const replacements: any[] = [realLimitPlusOne];
+
+
+        //for some reason this doesnt fucking work
         if (cursor) {
-            qb.where("createdAt < :cursor", { cursor: new Date(parseInt(cursor)) })
+            replacements.push(new Date(parseInt(cursor)))
+            dateString = moment(new Date(parseInt(cursor))).format("YYYY-MM-DD HH:mm:ss.SSSSSS");
         }
-        const posts = await qb.getMany()
+        const limitation = realLimitPlusOne;
+        const posts = await getConnection().query(
+            `
+          SELECT p.*
+          FROM post p
+          ${cursor ? `where p.createdAt < "${dateString}"` : ""}
+          ORDER by p.createdAt DESC
+          limit ${limitation}
+          `,
+        );
+        //const posts = await getConnection().query("SELECT * FROM lireddit2.post WHERE id = @0", [374]);
+
+        // const qb =
+        //     getConnection()
+        //         .getRepository(Post)
+        //         .createQueryBuilder("p")
+        //         .orderBy("createdAt", "DESC")
+        //         .take(realLimitPlusOne)
+        // // if (cursor) {
+        // //     qb.where("createdAt < :cursor", { cursor: new Date(parseInt(cursor)) })
+        // // }
+        // const posts = await qb.getMany()
+        console.log("posts: ", posts)
         return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne };
     }
 
