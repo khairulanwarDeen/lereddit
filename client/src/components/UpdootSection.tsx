@@ -26,8 +26,11 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
         aria-label="Up Vote"
         w={6}
         h={6}
-        colorScheme={"teal"}
+        colorScheme={post.voteStatus === 1 ? "teal" : undefined}
         onClick={async () => {
+          if (post.voteStatus === 1) {
+            return;
+          }
           setLoadingState("upvote-loading");
           await vote({
             value: 1,
@@ -43,8 +46,11 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
         aria-label="Down Vote"
         w={6}
         h={6}
-        colorScheme={"pink"}
+        colorScheme={post.voteStatus === -1 ? "pink" : undefined}
         onClick={async () => {
+          if (post.voteStatus === -1) {
+            return;
+          }
           setLoadingState("downvote-loading");
           await vote({
             value: -1,

@@ -18,12 +18,14 @@ export class PostResolver {
     @Query(() => PaginatedPosts)
     async getposts(
         @Arg('limit', () => Int) limit: number,
-        @Arg('cursor', () => String, { nullable: true }) cursor: string | null //becasue the first time you fetch, cursor is null
+        @Arg('cursor', () => String, { nullable: true }) cursor: string | null, //becasue the first time you fetch, cursor is null
+        @Ctx() { req }: MyContext
     ): Promise<PaginatedPosts> {
         const realLimit = Math.min(100, limit)
         const realLimitPlusOne = realLimit + 1;
         let dateString: any = "";
         const replacements: any[] = [realLimitPlusOne];
+        const UseId = req.session.userId;
 
         if (cursor) {
             replacements.push(new Date(parseInt(cursor)))
@@ -39,7 +41,8 @@ export class PostResolver {
             'email', u.email,
             'createdAt', u.createdAt,
             'updatedAt', u.updatedAt
-          ) creator
+          ) creator,
+          ${req.session.userId ? `(select value from updoot where userId = ${UseId} and postId = p.id) voteStatus` : `null as "voteStatus"`}
           FROM post p
           inner join user u on u.id = p.creatorId
           ${cursor ? `where p.createdAt < "${dateString}"` : ""}
