@@ -7,6 +7,10 @@ query GetPosts($limit: Int!, $cursor: String) {
       id
       createdAt
       updatedAt
+      creator {
+        username
+        id
+      }
     }
   }
 }
