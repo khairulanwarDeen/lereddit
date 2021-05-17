@@ -35,8 +35,16 @@ export class PostResolver {
         const limitation = realLimitPlusOne;
         const posts = await getConnection().query(
             `
-          SELECT p.*
+          SELECT p.*,
+          json_object(
+            'id', u.id,
+            'username', u.username,
+            'email', u.email,
+            'createdAt', u.createdAt,
+            'updatedAt', u.updatedAt
+          ) creator
           FROM post p
+          inner join user u on u.id = p.creatorId
           ${cursor ? `where p.createdAt < "${dateString}"` : ""}
           ORDER by p.createdAt DESC
           limit ${limitation}
@@ -54,6 +62,10 @@ export class PostResolver {
         // //     qb.where("createdAt < :cursor", { cursor: new Date(parseInt(cursor)) })
         // // }
         // const posts = await qb.getMany()
+
+        posts.forEach((index: { [x: string]: any; }) => {
+            index["creator"] = JSON.parse(index["creator"])
+        });
         console.log("posts: ", posts)
         return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne };
     }
