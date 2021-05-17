@@ -1,18 +1,21 @@
-import { withUrqlClient } from "next-urql";
-import React, { useState } from "react";
-import { Layout } from "../components/layout";
-import { useGetPostsQuery } from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
-import NextLink from "next/link";
+import { ArrowDownIcon, ArrowUpIcon } from "@chakra-ui/icons";
 import {
   Box,
-  Heading,
-  Link,
-  Text,
-  Stack,
-  Flex,
   Button,
+  Flex,
+  Heading,
+  IconButton,
+  Link,
+  Stack,
+  Text,
 } from "@chakra-ui/react";
+import { withUrqlClient } from "next-urql";
+import NextLink from "next/link";
+import React, { useState } from "react";
+import { Layout } from "../components/layout";
+import { UpdootSection } from "../components/UpdootSection";
+import { useGetPostsQuery } from "../generated/graphql";
+import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
   const limitNo = 100;
@@ -47,13 +50,16 @@ const Index = () => {
       ) : (
         <Stack spacing={8}>
           {data!.getposts.posts.map((p) => (
-            <Box key={p.id} p={5} shadow="md" borderWidth="1px">
-              <Heading fontSize="large">
-                {p.title} Post Id: {p.id}
-              </Heading>
-              Posted by: {p.creator.username} User Id: {p.creator.id}
-              <Text mt={4}>{p.textSnippet}</Text>
-            </Box>
+            <Flex key={p.id} p={5} shadow="md" borderWidth="1px">
+              <UpdootSection post={p} />
+              <Box>
+                <Heading fontSize="large">
+                  {p.title} Post Id: {p.id}
+                </Heading>
+                Posted by: {p.creator.username} User Id: {p.creator.id}
+                <Text mt={4}>{p.textSnippet}</Text>
+              </Box>
+            </Flex>
           ))}
         </Stack>
       )}
