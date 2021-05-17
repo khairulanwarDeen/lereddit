@@ -10,9 +10,11 @@ import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
 import { COOKIE_NAME } from "./constants";
 import { Post } from "./entities/post";
+import { Updoot } from "./entities/Updoot";
 import { User } from "./entities/user";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
+import { UpdootResolver } from "./resolvers/Updoot";
 //import { Post } from "./entities/post";
 import { UserResolver } from "./resolvers/user";
 
@@ -32,7 +34,7 @@ const main = async () => {
         logging: true,
         synchronize: true,
         //migrations: [path.join(__dirname, "./migrations/*")],
-        entities: [Post, User]
+        entities: [Post, User, Updoot]
     });
     //await conn.runMigrations();
 
@@ -77,7 +79,7 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [HelloResolver, PostResolver, UserResolver],
+            resolvers: [HelloResolver, PostResolver, UserResolver, UpdootResolver],
             validate: false,
         }),
         context: ({ req, res }) => ({ req, res, redis })

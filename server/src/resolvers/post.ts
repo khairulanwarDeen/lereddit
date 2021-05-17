@@ -9,12 +9,11 @@ import moment from "moment";
 
 @Resolver(Post)
 export class PostResolver {
-
-
     @FieldResolver(() => String)
     textSnippet(@Root() root: Post) {
         return (root.text.slice(0, 50) + "...");
     }
+
 
     @Query(() => PaginatedPosts)
     async getposts(
@@ -26,8 +25,6 @@ export class PostResolver {
         let dateString: any = "";
         const replacements: any[] = [realLimitPlusOne];
 
-
-        //for some reason this doesnt fucking work
         if (cursor) {
             replacements.push(new Date(parseInt(cursor)))
             dateString = moment(new Date(parseInt(cursor))).format("YYYY-MM-DD HH:mm:ss.SSSSSS");
@@ -66,7 +63,7 @@ export class PostResolver {
         posts.forEach((index: { [x: string]: any; }) => {
             index["creator"] = JSON.parse(index["creator"])
         });
-        console.log("posts: ", posts)
+        //console.log("posts: ", posts)
         return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne };
     }
 
