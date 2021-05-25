@@ -112,6 +112,7 @@ export class PostResolver {
         @Ctx() { req }: MyContext
     ): Promise<Boolean> { // return type
         //not cascade way
+        //this is more explicit. i like this
         const post = await Post.findOne(id);
         if (!post) {
             return false;
