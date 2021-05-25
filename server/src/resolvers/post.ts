@@ -6,6 +6,7 @@ import { Post } from "../entities/post";
 import { isAuth } from "../middleware/isAuth";
 import { postInput } from "../utils/postInput";
 import moment from "moment";
+import { Updoot } from "../entities/Updoot";
 
 @Resolver(Post)
 export class PostResolver {
@@ -110,7 +111,16 @@ export class PostResolver {
         @Arg("id", () => Int) id: number,
         @Ctx() { req }: MyContext
     ): Promise<Boolean> { // return type
-        await Post.delete({ id, creatorId: req.session.userId })
+        const post = await Post.findOne(id);
+        if (!post) {
+            return false;
+        }
+        if (post.creatorId !== req.session.userId) {
+            console.log("Not Authorized to delete this")
+            throw new Error("Not Authorized");
+        }
+        await Updoot.delete({ postId: id })
+        await Post.delete({ id })
         return true;
     }
 
