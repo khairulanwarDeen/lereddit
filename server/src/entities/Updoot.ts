@@ -31,3 +31,10 @@ export class Updoot extends BaseEntity {
     post: Post;
 }
 
+/*  for cascade syntax
+    @Field(() => Post)
+    @ManyToOne(() => Post, (post) => post.updoots, {
+        onDelete: 'CASCADE'
+    })
+    post: Post;
+ */

@@ -111,6 +111,7 @@ export class PostResolver {
         @Arg("id", () => Int) id: number,
         @Ctx() { req }: MyContext
     ): Promise<Boolean> { // return type
+        //not cascade way
         const post = await Post.findOne(id);
         if (!post) {
             return false;
@@ -121,6 +122,10 @@ export class PostResolver {
         }
         await Updoot.delete({ postId: id })
         await Post.delete({ id })
+        /*--------------------------------*/
+        // // cascade way !! doestn work yet
+        // // try get mysql to cascade delete through the updoot entitiy
+        // await Post.delete({ id, creatorId: req.session.userId })
         return true;
     }
 
