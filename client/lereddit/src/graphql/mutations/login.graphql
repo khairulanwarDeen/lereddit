@@ -1,5 +1,0 @@
-mutation Login($usernameOremail: String!, $password: String!) {
-  login(usernameOremail: $usernameOremail, password: $password) {
-    ...RegularUserResponse
-  }
-}

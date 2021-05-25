@@ -113,7 +113,7 @@ export type QueryGetpostsArgs = {
 
 
 export type QueryGetpostArgs = {
-  id: Scalars['Float'];
+  id: Scalars['Int'];
 };
 
 export type User = {
@@ -272,6 +272,23 @@ export type MeQuery = (
   )> }
 );
 
+export type GetpostQueryVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type GetpostQuery = (
+  { __typename?: 'Query' }
+  & { getpost?: Maybe<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'createdAt' | 'updatedAt' | 'title' | 'points' | 'text' | 'voteStatus'>
+    & { creator: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'username'>
+    ) }
+  )> }
+);
+
 export type GetPostsQueryVariables = Exact<{
   limit: Scalars['Int'];
   cursor?: Maybe<Scalars['String']>;
@@ -419,6 +436,27 @@ export const MeDocument = gql`
 
 export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
+};
+export const GetpostDocument = gql`
+    query Getpost($id: Int!) {
+  getpost(id: $id) {
+    id
+    createdAt
+    updatedAt
+    title
+    points
+    text
+    voteStatus
+    creator {
+      id
+      username
+    }
+  }
+}
+    `;
+
+export function useGetpostQuery(options: Omit<Urql.UseQueryArgs<GetpostQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<GetpostQuery>({ query: GetpostDocument, ...options });
 };
 export const GetPostsDocument = gql`
     query GetPosts($limit: Int!, $cursor: String) {
