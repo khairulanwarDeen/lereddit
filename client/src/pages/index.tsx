@@ -34,15 +34,6 @@ const Index = () => {
   }
   return (
     <Layout>
-      <Flex align={"center"}>
-        <Heading>LeRed</Heading>
-        <NextLink href="/create-post">
-          <Link color="black" ml={"auto"}>
-            Create A Post
-          </Link>
-        </NextLink>
-      </Flex>
-
       <div>Latest post from the limit of: {variables.limit}</div>
       <br />
       {fetching && !data ? (
