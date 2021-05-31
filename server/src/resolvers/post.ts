@@ -1,12 +1,12 @@
+import moment from "moment";
 import { MyContext } from "src/types";
-import { PaginatedPosts } from "../utils/PaginatedPosts";
 import { Arg, Ctx, FieldResolver, Int, Mutation, Query, Resolver, Root, UseMiddleware } from "type-graphql";
 import { getConnection } from "typeorm";
 import { Post } from "../entities/post";
-import { isAuth } from "../middleware/isAuth";
-import { postInput } from "../utils/postInput";
-import moment from "moment";
 import { Updoot } from "../entities/Updoot";
+import { isAuth } from "../middleware/isAuth";
+import { PaginatedPosts } from "../utils/PaginatedPosts";
+import { postInput } from "../utils/postInput";
 
 @Resolver(Post)
 export class PostResolver {
@@ -89,19 +89,26 @@ export class PostResolver {
     }
 
     @Mutation(() => Post, { nullable: true }) //return types
+    @UseMiddleware(isAuth)
     async updatePost(
         @Arg("id") id: number,                                       //these are arguments
-        @Arg("title", () => String, { nullable: true }) title: string, //this argument becomes optional. 
+        @Arg("title") title: string, //this argument becomes optional. 
+        @Arg("text") text: string,
+        @Ctx() { req }: MyContext
         //but must explicitly show the expected type if there is one
-    ): Promise<Post | null> {
-        const post = await Post.findOne({ where: { id } })
-        if (!post) {
-            return null;
-        }
-        if (typeof title !== undefined) {
-            post.title = title;
-            await Post.update({ id }, { title }) //updating based on that id. updating with a new title
-        }
+    ): Promise<Post | undefined> {
+        await getConnection()
+            .createQueryBuilder()
+            .update(Post)
+            .set({ title, text })
+            .where('id = :id and creatorId = :creatorId', {
+                id,
+                creatorId: req.session.userId,
+            })
+            //.returning("*")
+            .execute();
+
+        const post = await Post.findOne(id);
         return post;
     }
 
