@@ -1,10 +1,8 @@
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
   Flex,
   Heading,
-  IconButton,
   Link,
   Stack,
   Text,
@@ -12,9 +10,10 @@ import {
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
 import React, { useState } from "react";
+import EditDeletePostButtons from "../components/EditDeletePostButtons";
 import { Layout } from "../components/layout";
 import { UpdootSection } from "../components/UpdootSection";
-import { useDeletePostMutation, useGetPostsQuery } from "../generated/graphql";
+import { useGetPostsQuery, useMeQuery } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
@@ -24,9 +23,8 @@ const Index = () => {
     cursor: null as null | string,
   });
 
-  const [, deletePost] = useDeletePostMutation();
-
   console.log(variables);
+  const [{ data: meData }] = useMeQuery();
 
   const [{ data, fetching }] = useGetPostsQuery({
     variables,
@@ -59,26 +57,12 @@ const Index = () => {
                     <Text flex={1} mt={4}>
                       {p.textSnippet}
                     </Text>
-                    <NextLink href="/post/edit/[id]" as={`/post/edit/${p.id}`}>
-                      <IconButton
-                        as={Link}
-                        ml="auto"
-                        mr="4"
-                        colorScheme="blue"
-                        icon={<EditIcon />}
-                        aria-label="Edit Post"
-                      />
-                    </NextLink>
 
-                    <IconButton
-                      ml="auto"
-                      colorScheme="red"
-                      icon={<DeleteIcon />}
-                      aria-label="Delete Post"
-                      onClick={() => {
-                        deletePost({ id: p.id });
-                      }}
-                    />
+                    {meData?.me?.id === p.creator.id ? (
+                      <Box ml="auto">
+                        <EditDeletePostButtons id={p.id} />
+                      </Box>
+                    ) : null}
                   </Flex>
                 </Box>
               </Flex>

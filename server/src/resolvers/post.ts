@@ -75,7 +75,8 @@ export class PostResolver {
     getpost(
         @Arg("id", () => Int) id: number
     ): Promise<Post | undefined> {
-        return Post.findOne(id, { relations: ["creator"] });
+        const post = Post.findOne(id, { relations: ["creator"] })
+        return post;
     }
 
     @Mutation(() => Post)
