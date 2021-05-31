@@ -91,7 +91,7 @@ export class PostResolver {
     @Mutation(() => Post, { nullable: true }) //return types
     @UseMiddleware(isAuth)
     async updatePost(
-        @Arg("id") id: number,                                       //these are arguments
+        @Arg("id", () => Int) id: number,                                       //these are arguments
         @Arg("title") title: string, //this argument becomes optional. 
         @Arg("text") text: string,
         @Ctx() { req }: MyContext

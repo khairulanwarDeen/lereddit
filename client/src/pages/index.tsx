@@ -1,4 +1,4 @@
-import { DeleteIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -59,6 +59,17 @@ const Index = () => {
                     <Text flex={1} mt={4}>
                       {p.textSnippet}
                     </Text>
+                    <NextLink href="/post/edit/[id]" as={`/post/edit/${p.id}`}>
+                      <IconButton
+                        as={Link}
+                        ml="auto"
+                        mr="4"
+                        colorScheme="blue"
+                        icon={<EditIcon />}
+                        aria-label="Edit Post"
+                      />
+                    </NextLink>
+
                     <IconButton
                       ml="auto"
                       colorScheme="red"
