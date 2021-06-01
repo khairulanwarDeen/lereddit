@@ -1,6 +1,5 @@
 import DataLoader from "dataloader";
 import { Updoot } from "../entities/Updoot";
-import { User } from "../entities/user";
 
 /**
  * @author Anwar

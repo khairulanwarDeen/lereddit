@@ -37,8 +37,7 @@ export class PostResolver {
     @Query(() => PaginatedPosts)
     async getposts(
         @Arg('limit', () => Int) limit: number,
-        @Arg('cursor', () => String, { nullable: true }) cursor: string | null, //becasue the first time you fetch, cursor is null
-        @Ctx() { req }: MyContext
+        @Arg('cursor', () => String, { nullable: true }) cursor: string | null //becasue the first time you fetch, cursor is null
     ): Promise<PaginatedPosts> {
         const realLimit = Math.min(100, limit)
         const realLimitPlusOne = realLimit + 1;
