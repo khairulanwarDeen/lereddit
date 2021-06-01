@@ -1,4 +1,5 @@
 import moment from "moment";
+import { User } from "../entities/user";
 import { MyContext } from "src/types";
 import { Arg, Ctx, FieldResolver, Int, Mutation, Query, Resolver, Root, UseMiddleware } from "type-graphql";
 import { getConnection } from "typeorm";
@@ -14,6 +15,13 @@ export class PostResolver {
     textSnippet(@Root() root: Post) {
         return (root.text.slice(0, 50) + "...");
     }
+
+    @FieldResolver(() => User)
+    creator(@Root() post: Post,
+        @Ctx() { userLoader }: MyContext) {
+        return userLoader.load(post.creatorId);
+    }
+
 
 
     @Query(() => PaginatedPosts)
@@ -36,23 +44,35 @@ export class PostResolver {
         const posts = await getConnection().query(
             `
           SELECT p.*,
-          json_object(
-            'id', u.id,
-            'username', u.username,
-            'email', u.email,
-            'createdAt', u.createdAt,
-            'updatedAt', u.updatedAt
-          ) creator,
           ${req.session.userId ? `(select value from updoot where userId = ${UseId} and postId = p.id) voteStatus` : `null as "voteStatus"`}
           FROM post p
-          inner join user u on u.id = p.creatorId
           ${cursor ? `where p.createdAt < "${dateString}"` : ""}
           ORDER by p.createdAt DESC
           limit ${limitation}
           `,
         );
+        // const posts = await getConnection().query(
+        //     `
+        //   SELECT p.*,
+        //   json_object(
+        //     'id', u.id,
+        //     'username', u.username,
+        //     'email', u.email,
+        //     'createdAt', u.createdAt,
+        //     'updatedAt', u.updatedAt
+        //   ) creator,
+        //   ${req.session.userId ? `(select value from updoot where userId = ${UseId} and postId = p.id) voteStatus` : `null as "voteStatus"`}
+        //   FROM post p
+        //   inner join user u on u.id = p.creatorId
+        //   ${cursor ? `where p.createdAt < "${dateString}"` : ""}
+        //   ORDER by p.createdAt DESC
+        //   limit ${limitation}
+        //   `,
+        // );
         //const posts = await getConnection().query("SELECT * FROM lireddit2.post WHERE id = @0", [374]);
 
+        //take a look at this query. i think i can pass in params here, because im using mySql
+        //query: SELECT `User`.`id` AS `User_id`, `User`.`createdAt` AS `User_createdAt`, `User`.`updatedAt` AS `User_updatedAt`, `User`.`username` AS `User_username`, `User`.`email` AS `User_email`, `User`.`password` AS `User_password` FROM `user` `User` WHERE `User`.`id` IN (?, ?, ?, ?, ?) -- PARAMETERS: [1,6,5,3,7]
         // const qb =
         //     getConnection()
         //         .getRepository(Post)
@@ -64,9 +84,9 @@ export class PostResolver {
         // // }
         // const posts = await qb.getMany()
 
-        posts.forEach((index: { [x: string]: any; }) => {
-            index["creator"] = JSON.parse(index["creator"])
-        });
+        // posts.forEach((index: { [x: string]: any; }) => {
+        //     index["creator"] = JSON.parse(index["creator"])
+        // });
         //console.log("posts: ", posts)
         return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne };
     }
@@ -75,7 +95,7 @@ export class PostResolver {
     getpost(
         @Arg("id", () => Int) id: number
     ): Promise<Post | undefined> {
-        const post = Post.findOne(id, { relations: ["creator"] })
+        const post = Post.findOne(id)
         return post;
     }
 

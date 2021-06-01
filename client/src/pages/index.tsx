@@ -26,11 +26,16 @@ const Index = () => {
   console.log(variables);
   const [{ data: meData }] = useMeQuery();
 
-  const [{ data, fetching }] = useGetPostsQuery({
+  const [{ data, error, fetching }] = useGetPostsQuery({
     variables,
   });
   if (!fetching && !data) {
-    return <div>There is no data for some reason</div>;
+    return (
+      <>
+        <div>There is no data for some reason</div>
+        <div>{error?.message}</div>
+      </>
+    );
   }
   return (
     <Layout>
