@@ -22,6 +22,16 @@ export class PostResolver {
         return userLoader.load(post.creatorId);
     }
 
+    @FieldResolver(() => Int, { nullable: true })
+    async voteStatus(@Root() post: Post,
+        @Ctx() { updootLoader, req }: MyContext) {
+        if (!req.session.userId) {
+            return null;
+        }
+        const updoot = await updootLoader.load({ postId: post.id, userId: req.session.userId })
+        return updoot ? updoot.value : null;
+    }
+
 
 
     @Query(() => PaginatedPosts)
@@ -34,7 +44,8 @@ export class PostResolver {
         const realLimitPlusOne = realLimit + 1;
         let dateString: any = "";
         const replacements: any[] = [realLimitPlusOne];
-        const UseId = req.session.userId;
+        //const UseId = req.session.userId;
+
 
         if (cursor) {
             replacements.push(new Date(parseInt(cursor)))
@@ -43,14 +54,31 @@ export class PostResolver {
         const limitation = realLimitPlusOne;
         const posts = await getConnection().query(
             `
-          SELECT p.*,
-          ${req.session.userId ? `(select value from updoot where userId = ${UseId} and postId = p.id) voteStatus` : `null as "voteStatus"`}
+          SELECT p.*
           FROM post p
           ${cursor ? `where p.createdAt < "${dateString}"` : ""}
           ORDER by p.createdAt DESC
           limit ${limitation}
           `,
         );
+        //Without creatorId FieldResolver
+        // if (cursor) {
+        //     replacements.push(new Date(parseInt(cursor)))
+        //     dateString = moment(new Date(parseInt(cursor))).format("YYYY-MM-DD HH:mm:ss.SSSSSS");
+        // }
+        // const limitation = realLimitPlusOne;
+        // const posts = await getConnection().query(
+        //     `
+        //   SELECT p.*,
+        //   ${req.session.userId ? `(select value from updoot where userId = ${UseId} and postId = p.id) voteStatus` : `null as "voteStatus"`}
+        //   FROM post p
+        //   ${cursor ? `where p.createdAt < "${dateString}"` : ""}
+        //   ORDER by p.createdAt DESC
+        //   limit ${limitation}
+        //   `,
+        // );
+
+        //This query is without creator field resolver
         // const posts = await getConnection().query(
         //     `
         //   SELECT p.*,

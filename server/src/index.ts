@@ -17,6 +17,7 @@ import { PostResolver } from "./resolvers/post";
 import { UpdootResolver } from "./resolvers/Updoot";
 //import { Post } from "./entities/post";
 import { UserResolver } from "./resolvers/user";
+import { createUpdootLoader } from "./utils/createUpdootLoader";
 import { createUserLoader } from "./utils/createUserLoader";
 
 
@@ -83,7 +84,7 @@ const main = async () => {
             resolvers: [HelloResolver, PostResolver, UserResolver, UpdootResolver],
             validate: false,
         }),
-        context: ({ req, res }) => ({ req, res, redis, userLoader: createUserLoader() })
+        context: ({ req, res }) => ({ req, res, redis, userLoader: createUserLoader(), updootLoader: createUpdootLoader() })
     });
     apolloServer.applyMiddleware({
         app,
